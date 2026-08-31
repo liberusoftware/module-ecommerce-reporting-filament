@@ -1,0 +1,49 @@
+{
+    "name": "liberusoftware/ecommerce-reporting-filament",
+    "description": "The operator's view of a reported number: what each definition asks and who answers it, what every run computed and what it refused and why, and which subscriptions have gone undelivered.",
+    "type": "liberu-module",
+    "license": "MIT",
+    "version": "0.1.0",
+    "keywords": ["laravel", "filament", "ecommerce", "reporting", "liberu"],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/liberusoftware/module-ecommerce-reporting"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "filament/filament": "^5.4",
+        "illuminate/database": "^13.0",
+        "illuminate/support": "^13.0",
+        "liberusoftware/ecommerce-reporting": "^0.1"
+    },
+    "require-dev": {
+        "liberusoftware/package-testbench": "^1.7",
+        "livewire/livewire": "^4.2",
+        "pestphp/pest": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Liberu\\Ecommerce\\Reporting\\Filament\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Liberu\\Ecommerce\\Reporting\\Filament\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "liberu": {
+            "name": "ecommerce-reporting-filament"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

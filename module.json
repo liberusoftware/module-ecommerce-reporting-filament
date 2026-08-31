@@ -1,0 +1,41 @@
+{
+    "name": "ecommerce-reporting-filament",
+    "version": "0.1.0",
+    "description": "The operator's view of a reported number: what each definition asks and who answers it, what every run computed and what it refused and why, and which subscriptions have gone undelivered.",
+    "category": "presentation",
+    "provider": "Liberu\\Ecommerce\\Reporting\\Filament\\ReportingFilamentServiceProvider",
+    "requires": {
+        "packages": {
+            "liberusoftware/ecommerce-reporting": "^0.1"
+        }
+    },
+    "presentation": {
+        "filament": {
+            "app": [
+                "Liberu\\Ecommerce\\Reporting\\Filament\\ReportingPlugin"
+            ]
+        }
+    },
+    "features": [
+        "A definition a run could not obtain renders its refusal and its reason, never a nought and never an empty cell",
+        "All six refusal reasons the domain publishes have a sentence, and a new one is a hole in a match rather than a blank on a screen",
+        "The stats widget carries one entry per definition the newest run touched, and a refused definition's entry is the reason rather than a zero with an arrow beside it",
+        "Every widget states the tenant in its own query, because a widget is the surface Filament's own tenancy does not reach and canView defaults to true",
+        "Both widgets are constructed by the suite, which is the test the host never had and the reason its store-scoped widget error was invisible to CI",
+        "The whole page reads the domain once through a per-request snapshot, rather than each widget resolving a service and re-running the same aggregates",
+        "One clock is read per request and every window comes from it, so a page rendered across midnight cannot report two different windows",
+        "Every figure is shown beside the window it covers, which the host's dashboard never named at all",
+        "Money is rendered in minor units and said to be, because the domain stores no exponent and inventing one here would be arithmetic this package must not do",
+        "A ratio is rendered as the two integers it was stored as, never as a percentage that clamps",
+        "The readiness screen tells a module that has never run from one whose every run failed from one with genuinely nothing to report",
+        "Each definition's source key is shown bound or unbound on the record, so an operator sees why a number is missing before a run refuses it",
+        "There is no create, edit or delete control anywhere: a definition is versioned rather than edited, and results and deliveries raise from their own deleting hooks",
+        "Defining and withdrawing a metric, computing a run and delivering it, and pausing a subscription are the published domain actions and nothing else",
+        "Custody is asked before a run id is handed on, because the domain publishes one method that takes a loaded run and does not re-check the tenant",
+        "No subject reference appears on any listing, and a redacted one renders as nobody named rather than as a blank",
+        "This panel offers neither the cross-tenant export nor the cross-tenant erasure, because a screen scoped to one merchant must not carry a control that spans every merchant",
+        "Nothing in this package writes through Eloquent: every write is a published action that takes the tenant as its first argument and re-reads its own row",
+        "Another merchant's definition, run or subscription and one that does not exist raise the same exception on every screen",
+        "Every count over a restated relation is asserted at its right non-zero value, because a guarded restatement that reports zero looks exactly like isolation working"
+    ]
+}

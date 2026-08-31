@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Liberu\Ecommerce\Reporting\Actions\DeliverRun;
+use Liberu\Ecommerce\Reporting\Actions\WithdrawMetric;
 use Liberu\Ecommerce\Reporting\Enums\RefusalReason;
 use Liberu\Ecommerce\Reporting\Enums\Unit;
 use Liberu\Ecommerce\Reporting\Filament\Support\PanelTenant;
@@ -190,4 +191,60 @@ it('reads one clock for the whole request, so two widgets cannot report two wind
     Snapshot::forget();
 
     expect(Snapshot::asOf())->not->toEqual($first);
+});
+
+it('says a definition the run said nothing about at all is neither a number nor a refusal', function (): void {
+    // The one place the module still lets silence look like an answer: a source
+    // that answers successfully with no readings produces no result row and no
+    // refusal, so the definition falls out of the run entirely. Filed as
+    // `ecommerce-reporting#6`. An empty stat here would read as nought.
+    defineMetric(name: 'net-revenue', sourceKey: 'orders');
+    bindSource('orders', new FakeSource([]));
+
+    compute();
+
+    $lines = Livewire::test(LatestRunOverview::class)->instance()->lines();
+
+    expect($lines)->toHaveCount(1)
+        ->and($lines[0]['metric'])->toBe('net-revenue v1')
+        ->and($lines[0]['value'])->toBe(Render::NONE)
+        ->and($lines[0]['because'])->toContain('no number and no refusal for it');
+});
+
+it('says the same of a definition minted after the run that is on the screen', function (): void {
+    // Which is the honest reading: this run holds nothing about it, and the
+    // domain does not publish enough to say which of the two reasons it is.
+    defineMetric(name: 'net-revenue', sourceKey: 'orders');
+    bindSource('orders', new FakeSource(money([1_250])));
+
+    compute();
+
+    defineMetric(name: 'orders-placed', sourceKey: 'orders', unit: Unit::Count, currency: null);
+    Snapshot::forget();
+
+    $lines = Livewire::test(LatestRunOverview::class)->instance()->lines();
+
+    expect($lines)->toHaveCount(2)
+        ->and($lines[0]['value'])->toBe('1250 GBP (minor units)')
+        ->and($lines[1]['metric'])->toBe('orders-placed v1')
+        ->and($lines[1]['because'])->toContain('was not in the run');
+});
+
+it('drops a withdrawn definition from the latest numbers rather than showing it as missing', function (): void {
+    // A withdrawn definition produces no further results by design, so listing
+    // it as one this run said nothing about would be a refusal that is not one.
+    defineMetric(name: 'net-revenue', sourceKey: 'orders');
+    bindSource('orders', new FakeSource(money([1_250])));
+
+    compute();
+
+    (new WithdrawMetric())(TestTenant::PRIMARY, 'net-revenue', 1);
+    Snapshot::forget();
+
+    expect(Snapshot::activeDefinitions(TestTenant::PRIMARY))->toBe([]);
+
+    // The number it did obtain is still on the screen, because the result cites
+    // the version rather than the row.
+    expect(Livewire::test(LatestRunOverview::class)->instance()->lines()[0]['value'])
+        ->toBe('1250 GBP (minor units)');
 });

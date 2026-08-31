@@ -337,3 +337,14 @@ it('contributes nothing when a panel boots it, so nothing can arrive on a panel 
 
     expect($plugin->getId())->toBe('ecommerce-reporting');
 });
+
+it('never calls the action that can reassign somebody else’s subscription', function (): void {
+    // `SubscribeToReport` upserts on (tenant, name) alone, so a second caller
+    // silently rewrites an existing subscription's subject and destination —
+    // a delivery that keeps running and starts going somewhere else. Filed as
+    // `ecommerce-reporting#4`. The guard belongs in the domain action and is
+    // not there yet, so this package ships no control that reaches it.
+    foreach (sourceFiles() as $file) {
+        expect(sourceCode($file))->not->toContain('SubscribeToReport');
+    }
+});

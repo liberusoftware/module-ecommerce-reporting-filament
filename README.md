@@ -38,9 +38,10 @@ never an empty cell and never a nought**.
 
 ## What it does not do
 
-- **No nought, anywhere, that it did not measure.** A refused definition renders its reason. An
-  empty table says which of the several possible silences it is. There is no default, no clamp and
-  no substitute.
+- **No nought, anywhere, that it did not measure.** A refused definition renders its reason. A
+  definition the run holds neither a number nor a refusal for — which happens when a bound source
+  answers with nothing — is named as exactly that rather than dropped. An empty table says which of
+  the several possible silences it is. There is no default, no clamp and no substitute.
 - **No arithmetic on money.** The domain stores minor units and an ISO 4217 code and **no exponent**,
   so this package renders `1250 GBP (minor units)` and does not divide. Dividing by a hundred is
   right for GBP, wrong for JPY and wrong for KWD; the host's own orders widget hard-coded
@@ -52,8 +53,9 @@ never an empty cell and never a nought**.
   merchant meant — and results and deliveries raise from their own `deleting` hooks. A delete
   offered here would fatal rather than refuse, and an ability that fatals is still an ability that
   was offered.
-- **No subscribe control.** `SubscribeToReport` takes a subject reference naming a person, and a
-  form that typed one in would mint an identity this module is not the custodian of.
+- **No subscribe control.** `SubscribeToReport` takes a subject reference naming a person, and it
+  upserts on `(tenant, name)` alone — so posting a name that already exists silently reassigns
+  somebody else's subscription and the address it delivers to.
 - **No export and no erasure screen.** Both published entry points say `AcrossTenants` in their
   names. A screen scoped to one merchant must not carry a control that acts on every merchant.
 - **No chart.** A line cannot render a refusal in place of a point, and every reader of a gap in a

@@ -50,7 +50,8 @@ class LatestRunOverview extends StatsOverviewWidget
      */
     public function lines(): array
     {
-        $set = Snapshot::latest(PanelTenant::current());
+        $tenant = PanelTenant::current();
+        $set = Snapshot::latest($tenant);
 
         if (! $set instanceof ResultSet) {
             return [[
@@ -61,6 +62,19 @@ class LatestRunOverview extends StatsOverviewWidget
         }
 
         $lines = [];
+
+        // Every definition the merchant currently asks for, first, so one the
+        // run said nothing at all about is a sentence rather than an absence.
+        // A source that answers successfully with no readings produces neither
+        // a result nor a refusal — `ecommerce-reporting#6`, and the one place
+        // the module still lets silence look like an answer.
+        foreach (Snapshot::activeDefinitions($tenant) as $definition) {
+            $lines[$definition->name] = [
+                'metric' => $definition->name.' v'.$definition->version,
+                'value' => Render::NONE,
+                'because' => 'this run holds no number and no refusal for it: either the bound source answered with nothing over this window, which the domain records as neither, or the definition was not in the run',
+            ];
+        }
 
         // Newest bucket per definition. The set arrives ordered by name then
         // bucket, so the last one written for a name is the newest.

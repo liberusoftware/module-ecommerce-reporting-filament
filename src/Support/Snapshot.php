@@ -41,6 +41,9 @@ final class Snapshot
     /** @var array<string, list<Definition>> */
     private static array $definitions = [];
 
+    /** @var array<string, array<string, Definition>> */
+    private static array $active = [];
+
     /** @var array<string, list<SubscriptionStatus>> */
     private static array $overdue = [];
 
@@ -62,6 +65,31 @@ final class Snapshot
     public static function definitions(string $tenantId): array
     {
         return self::$definitions[$tenantId] ??= (new ListDefinitions())($tenantId, activeOnly: false);
+    }
+
+    /**
+     * The newest active version of every definition this merchant asks for,
+     * keyed by name.
+     *
+     * Read with the domain's own active-only flag rather than filtered here,
+     * because `Data\Definition` carries no state — `ecommerce-reporting#5`.
+     *
+     * @return array<string, Definition>
+     */
+    public static function activeDefinitions(string $tenantId): array
+    {
+        if (array_key_exists($tenantId, self::$active)) {
+            return self::$active[$tenantId];
+        }
+
+        $newest = [];
+
+        // Ordered by name then version ascending, so the last one written wins.
+        foreach ((new ListDefinitions())($tenantId) as $definition) {
+            $newest[$definition->name] = $definition;
+        }
+
+        return self::$active[$tenantId] = $newest;
     }
 
     /** @return list<SubscriptionStatus> */
@@ -106,6 +134,7 @@ final class Snapshot
         self::$asOf = null;
         self::$latest = [];
         self::$definitions = [];
+        self::$active = [];
         self::$overdue = [];
     }
 }

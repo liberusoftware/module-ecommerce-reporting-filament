@@ -132,7 +132,36 @@ final class Readiness extends Page
 
         return 'The newest successful run covered '.Render::window($set->window).'. It obtained '
             .count($set->lines).' numbers and refused '.count($set->refusals).' definitions'
-            .($set->isComplete() ? '.' : ': '.implode('; ', Render::refusalLines($set->refusals)).'.');
+            .($set->isComplete() ? '.' : ': '.implode('; ', Render::refusalLines($set->refusals)).'.')
+            .$this->unaccountedLine($tenant, $set);
+    }
+
+    /**
+     * Definitions the run holds neither a number nor a refusal for.
+     *
+     * A source that answers successfully with no readings produces neither —
+     * `ecommerce-reporting#6` — so without this sentence those definitions are
+     * absent from the page rather than unanswered on it.
+     */
+    private function unaccountedLine(string $tenant, ResultSet $set): string
+    {
+        $accounted = [];
+
+        foreach ($set->lines as $line) {
+            $accounted[$line->definitionName] = true;
+        }
+
+        foreach ($set->refusals as $refusal) {
+            $accounted[$refusal->definitionName] = true;
+        }
+
+        $unaccounted = array_diff_key(Snapshot::activeDefinitions($tenant), $accounted);
+
+        return $unaccounted === []
+            ? ''
+            : ' It holds neither a number nor a refusal for '.count($unaccounted)
+                .' of the definitions this merchant currently asks for: '.implode(', ', array_keys($unaccounted))
+                .'. Either the source answered with nothing over the window, which the module records as neither, or they were not in the run.';
     }
 
     private function deliveryLine(): string

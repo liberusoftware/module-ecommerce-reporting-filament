@@ -27,6 +27,7 @@ So:
 | `ResultsRelationManager` | an empty state saying the run wrote no numbers and that the refusals are on the run |
 | `DefinitionResource` | whether the definition's source key is bound, on the record, before any run refuses it |
 | `SubscriptionResource` | never delivered, did not deliver, overdue and inside its cadence as four different sentences |
+| `Pages\Readiness` | which definitions the newest run holds neither a number nor a refusal for, named |
 
 ## Money
 
@@ -91,6 +92,22 @@ every write and in the suite's `beforeEach`.
   lines in one file rather than a `where` spread across three screens.
 - **`ecommerce-reporting#3` — `CustodyPolicy::subjectMayRead` guards a query that does not exist.**
   Not used here. This panel is an operator's, not a subscriber's.
+- **`ecommerce-reporting#4` — `SubscribeToReport` upserts on `(tenant, name)` alone.** A second
+  caller silently reassigns an existing subscription's `subject_ref` and `destination_ref`, so a
+  delivery keeps running and starts going somewhere else. This package ships no control that reaches
+  that action, and a boundary test asserts the class name appears nowhere in `src/`. That is a
+  stronger reason than the one this panel already had for shipping no subscribe form.
+- **`ecommerce-reporting#5` — `Data\Definition` carries no `state`.** It does not block this
+  package: `ListDefinitions` takes an `activeOnly` flag, which is how `Snapshot::activeDefinitions()`
+  knows which definitions are still asked for, and the Definitions listing reads `Models\
+  MetricDefinition`, which does carry the state. It would block anything reading the DTO alone.
+- **`ecommerce-reporting#6` — a source that answers successfully with no readings produces neither a
+  result nor a refusal.** The one place the module still lets silence look like an answer, and the
+  exact failure §4.2 exists to prevent. The widget therefore starts from every active definition and
+  says, of one the run holds neither for, *"this run holds no number and no refusal for it: either
+  the bound source answered with nothing over this window, which the domain records as neither, or
+  the definition was not in the run"* — the two possibilities, because the domain does not publish
+  enough to separate them. The Readiness page names the same definitions and the same ambiguity.
 - **`CustodyPolicy::ownsDefinition` and `ownsSubscription` are keyed on a name, not on a row.**
   `unique(tenant_id, name)` makes a name unique *within* a merchant, so two merchants may both hold
   `net-revenue`, and `ownsDefinition('tenant-a', 'net-revenue')` answers true while looking at
@@ -101,8 +118,10 @@ every write and in the suite's `beforeEach`.
 
 ## Deliberately not shipped
 
-- **No subscribe control.** `SubscribeToReport` takes a subject reference naming a person. A form
-  that typed one in would mint an identity this module is not the custodian of.
+- **No subscribe control.** Two reasons. `SubscribeToReport` takes a subject reference naming a
+  person, and a form that typed one in would mint an identity this module is not the custodian of;
+  and the action upserts on `(tenant, name)` alone, so posting a name that already exists silently
+  reassigns somebody else's subscription (`ecommerce-reporting#4`).
 - **No export and no erasure control.** Both published entry points say `AcrossTenants` in their
   names. A screen scoped to one merchant must not carry a control that acts on every merchant; a
   boundary test forbids the string.

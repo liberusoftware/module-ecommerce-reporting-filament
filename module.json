@@ -20,6 +20,7 @@
         "A definition a run could not obtain renders its refusal and its reason, never a nought and never an empty cell",
         "All six refusal reasons the domain publishes have a sentence, and a new one is a hole in a match rather than a blank on a screen",
         "The stats widget carries one entry per definition the newest run touched, and a refused definition's entry is the reason rather than a zero with an arrow beside it",
+        "A definition a run holds neither a number nor a refusal for is named as exactly that, because a source answering with nothing produces neither and would otherwise vanish from the screen",
         "Every widget states the tenant in its own query, because a widget is the surface Filament's own tenancy does not reach and canView defaults to true",
         "Both widgets are constructed by the suite, which is the test the host never had and the reason its store-scoped widget error was invisible to CI",
         "The whole page reads the domain once through a per-request snapshot, rather than each widget resolving a service and re-running the same aggregates",
@@ -36,6 +37,7 @@
         "This panel offers neither the cross-tenant export nor the cross-tenant erasure, because a screen scoped to one merchant must not carry a control that spans every merchant",
         "Nothing in this package writes through Eloquent: every write is a published action that takes the tenant as its first argument and re-reads its own row",
         "Another merchant's definition, run or subscription and one that does not exist raise the same exception on every screen",
-        "Every count over a restated relation is asserted at its right non-zero value, because a guarded restatement that reports zero looks exactly like isolation working"
+        "Every count over a restated relation is asserted at its right non-zero value, because a guarded restatement that reports zero looks exactly like isolation working",
+        "No control here reaches SubscribeToReport, which upserts on tenant and name alone and would let one caller silently reassign another person's subscription"
     ]
 }

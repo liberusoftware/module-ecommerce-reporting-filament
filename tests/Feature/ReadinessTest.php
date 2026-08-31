@@ -144,3 +144,19 @@ it('says a run was attempted and none succeeded, rather than that none was attem
 
     expect(readiness())->toContain('1 runs have been attempted and none has succeeded');
 });
+
+it('names the definitions a run holds neither a number nor a refusal for', function (): void {
+    // `ecommerce-reporting#6`: a source that answers successfully with no
+    // readings produces neither. Without this sentence those definitions are
+    // absent from the page rather than unanswered on it.
+    defineMetric(name: 'net-revenue', sourceKey: 'orders');
+    defineMetric(name: 'orders-placed', sourceKey: 'counts', unit: Unit::Count, currency: null);
+    bindSource('orders', new FakeSource(money([100])));
+    // Bound, asked, and it answered with nothing.
+    bindSource('counts', new FakeSource([]));
+
+    compute();
+
+    expect(readiness())->toContain('neither a number nor a refusal for 1 of the definitions')
+        ->and(readiness())->toContain('orders-placed');
+});

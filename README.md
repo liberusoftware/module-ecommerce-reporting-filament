@@ -1,84 +1,86 @@
-# Ecommerce: Reporting Filament
+# ecommerce-reporting-filament
 
-> This optional Filament 5 presentation package presents exactly one independent domain module. It contributes reusable resources, pages, widgets, schemas, tables, infolists, and actions to application-owned panels while delegating authorization, validation, tenancy, persistence, and business rules to the ecommerce-reporting public boundary. It mus
+The operator's view of a reported number. A Filament panel over
+[`liberusoftware/ecommerce-reporting`](https://github.com/liberusoftware/module-ecommerce-reporting):
+what each definition asks and who answers it, what every run computed and — as importantly — what it
+refused and why, and which subscriptions have gone undelivered.
 
-[Software](https://liberusoftware.com) ·
-[Hosting](https://liberuhosting.com) ·
-[Services](https://liberuservices.com) ·
-[Liberu Group](https://liberugroup.com)
+It is a one-to-one adapter. It contains no arithmetic and no business rules: every decision is a
+published domain action, query or model, and every state, grain, unit, cadence and refusal on every
+screen comes from a domain backed enum.
 
-![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white) ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white) ![Filament](https://img.shields.io/badge/Filament-5-FDAE4B)
-[![Latest release](https://img.shields.io/github/v/release/liberusoftware/module-ecommerce-reporting-filament?sort=semver)](https://github.com/liberusoftware/module-ecommerce-reporting-filament/releases/latest) [![Tests](https://github.com/liberusoftware/module-ecommerce-reporting-filament/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/liberusoftware/module-ecommerce-reporting-filament/actions/workflows/tests.yml)
+## The fault it is shaped around
 
-## Features
+**The host computes "revenue" three different ways, on one dashboard, and has nowhere to write down
+which one a number is.** The headline stat nets refunds; the per-product table sums line prices and
+cannot see a refund at all; lifetime value filters on a different column again and is gross of
+everything. A merchant reads all three on one page and no two of them mean the same thing.
 
-- Fully compatible with **Laravel 13**, **PHP 8.5**, and **Pest 5**.
-- Built following the domain-driven design guidelines of the Liberu architecture.
-- Reusable, presenting a clean public contract and boundaries.
-- Adheres to the strict database, security, and authorization standards of Liberu.
+The same page has the other half of the fault: when the previous period had no revenue, the growth
+figure returns `0`, so a merchant's **first** month and a merchant's **flat** month are both
+"0% increase" with an up arrow. A number that could not be computed and a number that happens to be
+nought come out of the same expression.
 
-## Requirements
+Both are one fault. So the domain module records a **refusal with a reason** and writes no result
+row where it could not obtain a number, and this package's single job is to **render the refusal,
+never an empty cell and never a nought**.
 
-- **PHP 8.5**
-- **Composer 2**
-- A supported database (e.g. MySQL, PostgreSQL, SQLite)
+## What it publishes
 
-## Quick start
+| | |
+|---|---|
+| `ReportingPlugin` | The entry point. The host attaches it to the panel it means to, with the two widgets. |
+| **Readiness** | Whether anything is defined, whether anything is bound to answer each source key, whether a run has ever been attempted, and — the distinction the host could not make — whether a quiet screen means nothing ran, everything that ran failed, or there was genuinely nothing to report. |
+| **Definitions** | What each number is: a name, a version, the source key that owns the arithmetic, the window and grain it is asked over, the unit it comes back in, and whether anything is bound to answer it. Define one, withdraw one. |
+| **Runs** | Every attempt, the window stamped on it, the numbers it obtained, and every definition it refused with the reason by name. Compute one, deliver one. |
+| **Subscriptions** | Who wants which definitions delivered where, every delivery attempt including the ones that refused, and whether each is inside its cadence. Pause one, resume one. |
+| **Two widgets** | The newest number for every definition — or the refusal in its place — under the window it covers; and the subscriptions that have not delivered. |
 
-To install this package via Composer, run:
+## What it does not do
+
+- **No nought, anywhere, that it did not measure.** A refused definition renders its reason. An
+  empty table says which of the several possible silences it is. There is no default, no clamp and
+  no substitute.
+- **No arithmetic on money.** The domain stores minor units and an ISO 4217 code and **no exponent**,
+  so this package renders `1250 GBP (minor units)` and does not divide. Dividing by a hundred is
+  right for GBP, wrong for JPY and wrong for KWD; the host's own orders widget hard-coded
+  `->money('USD')` and drew every order in dollars whatever it was taken in. The `-livewire` surface
+  renders money identically, and both have a boundary test forbidding `->money(`, `number_format`,
+  `intdiv`, `round(` and division in `src/`.
+- **No create, no edit, no delete, anywhere.** A definition is versioned rather than edited — a
+  result cites the version, so editing one in place would change what a number already shown to a
+  merchant meant — and results and deliveries raise from their own `deleting` hooks. A delete
+  offered here would fatal rather than refuse, and an ability that fatals is still an ability that
+  was offered.
+- **No subscribe control.** `SubscribeToReport` takes a subject reference naming a person, and a
+  form that typed one in would mint an identity this module is not the custodian of.
+- **No export and no erasure screen.** Both published entry points say `AcrossTenants` in their
+  names. A screen scoped to one merchant must not carry a control that acts on every merchant.
+- **No chart.** A line cannot render a refusal in place of a point, and every reader of a gap in a
+  line reads it as a nought.
+- **No subject reference on any listing.**
+
+## Widgets, which is where the host's tenancy stopped
+
+`Widget::canView()` returns true by default and no panel scope reaches what a widget queries — a
+widget is the one Filament surface the panel's own tenancy does not cover. The host's
+`TopProductsWidget` selected from a derived table with no `store_id` in it and raised an
+unknown-column error for **every** panel user whose team owned a store, and
+`grep -rn 'Widgets\\' tests/` came back empty across its whole tree, so CI never saw it.
+
+Both widgets here override `canView()`, state the tenant in their own reads, and are constructed by
+the suite.
+
+## Installing
 
 ```bash
-composer require liberusoftware/module-ecommerce-reporting-filament
+composer require liberusoftware/ecommerce-reporting-filament
 ```
 
-## Documentation
+Nothing boots on install: the module manager registers the provider when the module is named in
+`MODULES_ENABLED`. Attaching the panel is one call, and the host must add the schedule line itself —
+this package schedules nothing. See [`docs/adoption.md`](docs/adoption.md).
 
-- [Liberu Main Documentation](https://github.com/liberusoftware/documentation)
-- [Architecture & Standards Index](https://github.com/liberusoftware/documentation/tree/main/architecture)
-
-## Related Liberu Projects
-
-| Project | Repository | Purpose |
-| --- | --- | --- |
-| **Boilerplate** | [liberusoftware/boilerplate-laravel](https://github.com/liberusoftware/boilerplate-laravel) | Shared Laravel application foundation and reference composition |
-| **CMS** | [liberu-cms/cms-laravel](https://github.com/liberu-cms/cms-laravel) | Structured content, publishing, media, multisite, and headless delivery |
-| **CRM** | [liberu-crm/crm-laravel](https://github.com/liberu-crm/crm-laravel) | Customer data, sales, marketing, service, and customer success |
-| **Billing** | [liberu-billing/billing-laravel](https://github.com/liberu-billing/billing-laravel) | Products, subscriptions, invoicing, payments, and provisioning |
-| **Accounting** | [liberu-accounting/accounting-laravel](https://github.com/liberu-accounting/accounting-laravel) | Ledgers, banking, tax, expenses, close, and financial reporting |
-| **Ecommerce** | [liberu-ecommerce/ecommerce-laravel](https://github.com/liberu-ecommerce/ecommerce-laravel) | Catalog, checkout, orders, fulfillment, returns, B2B, and omnichannel commerce |
-| **Control Panel** | [liberu-control-panel/control-panel-laravel](https://github.com/liberu-control-panel/control-panel-laravel) | Hosting, infrastructure, DNS, mail, databases, backups, and security operations |
-| **Automation** | [liberu-automation/automation-laravel](https://github.com/liberu-automation/automation-laravel) | Governed workflows, provider-neutral AI, approvals, and connectors |
-
-## Security
-
-Please do not report security vulnerabilities through public GitHub issues.
-Follow our [Security Policy](https://github.com/liberusoftware/documentation/blob/main/architecture/SECURITY.md) for private reporting and supported versions.
-
-## License
-
-This project is open-source software. You may use, modify, and distribute it
-under the terms described in [LICENSE.md](LICENSE.md).
-
-The linked license text is authoritative; this summary is not legal advice.
-
-## Feedback and contributing
-
-Feedback and contributions are welcome. You can help by reporting reproducible
-bugs, proposing focused enhancements, improving documentation or translations,
-and submitting tested code changes.
-
-Before contributing, please read [CONTRIBUTING.md](https://github.com/liberusoftware/documentation/blob/main/standards/CONTRIBUTING.md) and our
-[Code of Conduct](https://github.com/liberusoftware/documentation/blob/main/architecture/CODE_OF_CONDUCT.md). Search existing issues first, then use
-the appropriate issue template. Pull requests should explain the problem and
-approach, remain focused, include or update tests, pass the required workflows,
-and document user-visible or breaking changes.
-
-## Contributors
-
-Thank you to everyone who helps improve Liberu.
-
-<a href="https://github.com/liberusoftware/module-ecommerce-reporting-filament/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=liberusoftware/module-ecommerce-reporting-filament" alt="Contributors to liberusoftware/module-ecommerce-reporting-filament">
-</a>
-
-[View the full contributors graph](https://github.com/liberusoftware/module-ecommerce-reporting-filament/graphs/contributors).
+Why every screen is shaped the way it is, including the gaps this package found in the domain, is in
+[`docs/panel.md`](docs/panel.md). What breaks and what to do about it is in
+[`docs/runbook.md`](docs/runbook.md).
